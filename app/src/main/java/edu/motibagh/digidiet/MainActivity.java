@@ -65,9 +65,17 @@ public class MainActivity extends AppCompatActivity implements MyAdapterInterfac
                         Firebasecrud model = listData.get( position );
                         String stored = model.getIsStoredinDB();
                         if (stored.equals("y")){
-                            Intent activityChangeIntent = new Intent(MainActivity.this, PdfViewer.class);
-                            activityChangeIntent.putExtra("filepath", model.filelocalPath);
-                            MainActivity.this.startActivity(activityChangeIntent);
+
+                            String filename = model.fileId +".pdf";
+
+                            String fileePath = Environment.getExternalStorageDirectory().toString() + "/"+filename;
+
+                            viewPDF(filename,model);
+                            File internalFile = new File(MainActivity.this.getExternalFilesDir("").getPath());
+//
+//                            Intent activityChangeIntent = new Intent(MainActivity.this, PdfViewer.class);
+//                            activityChangeIntent.putExtra("filepath", fileePath);
+//                            MainActivity.this.startActivity(activityChangeIntent);
                         }else{
                             new MainActivityDataManager(MainActivity.this).setUpDownloadManager(MainActivity.this, model, position, downloadManagerCallback);
                         }
@@ -80,6 +88,22 @@ public class MainActivity extends AppCompatActivity implements MyAdapterInterfac
 
     }
 
+    public void viewPDF( String filename, Firebasecrud model)
+    {
+        File internalFile = new File(MainActivity.this.getExternalFilesDir("").getPath());
+
+        File pdfFile = new File(Environment.getExternalStorageDirectory() + "/" + filename);  // -> filename = maven.pdf
+        Uri path = Uri.parse(model.filelocalPath);
+        Intent pdfIntent = new Intent(Intent.ACTION_VIEW);
+        pdfIntent.setDataAndType(path, "application/pdf");
+        pdfIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        try{
+            startActivity(pdfIntent);
+        }catch(ActivityNotFoundException e){
+            Toast.makeText(MainActivity.this, "No Application available to view PDF", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void viewPdf(Uri file) {
         Intent intent;

@@ -1,13 +1,21 @@
 package edu.motibagh.digidiet;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
+import android.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import edu.motibagh.digidiet.Database.MyDatabase;
@@ -57,8 +65,9 @@ public class MainActivity extends AppCompatActivity implements MyAdapterInterfac
                         Firebasecrud model = listData.get( position );
                         String stored = model.getIsStoredinDB();
                         if (stored.equals("y")){
-                            //  model.filepath // local path
-//                            PDF URI to display
+                            Intent activityChangeIntent = new Intent(MainActivity.this, PdfViewer.class);
+                            activityChangeIntent.putExtra("filepath", model.filelocalPath);
+                            MainActivity.this.startActivity(activityChangeIntent);
                         }else{
                             new MainActivityDataManager(MainActivity.this).setUpDownloadManager(MainActivity.this, model, position, downloadManagerCallback);
                         }
@@ -70,6 +79,36 @@ public class MainActivity extends AppCompatActivity implements MyAdapterInterfac
         );
 
     }
+
+
+    private void viewPdf(Uri file) {
+        Intent intent;
+        intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(file, "application/pdf");
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            // No application to view, ask to download one
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("No Application Found");
+            builder.setMessage("Download one from Android Market?");
+            builder.setPositiveButton("Yes, Please",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent marketIntent = new Intent(Intent.ACTION_VIEW);
+                            marketIntent
+                                    .setData(Uri
+                                            .parse("market://details?id=com.adobe.reader"));
+                            startActivity(marketIntent);
+                        }
+                    });
+            builder.setNegativeButton("No, Thanks", null);
+            builder.create().show();
+        }
+    }
+
+
     //fetch DB data from anywhere in APP
 
     public ArrayList<Firebasecrud> fetchAllDataFromDB(){
@@ -93,8 +132,20 @@ public class MainActivity extends AppCompatActivity implements MyAdapterInterfac
     }
 
     public void updateDataInList(){
+
+        final String subject = getIntent().getStringExtra("subject");
+        final String type = getIntent().getStringExtra("type");
         listData.clear();
-        listData = new MainActivityDataManager(MainActivity.this).fetchAllDataFromDB();
+        ArrayList<Firebasecrud> dblist = new ArrayList<>();
+        dblist = new MainActivityDataManager(MainActivity.this).fetchAllDataFromDB();
+
+        for (Firebasecrud target : dblist) {
+            if(target.getSubject().equals(subject) && target.getType().equals(type)) {
+                listData.add(target);
+            }
+        }
+
+
         setUpRecyclerAdapter();
     }
 

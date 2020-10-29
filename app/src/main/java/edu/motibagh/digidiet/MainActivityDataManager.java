@@ -62,11 +62,10 @@ public MainActivityDataManager(Context context){
         record = model;
 
         downloadManager = new ThinDownloadManager(DOWNLOAD_THREAD_POOL_SIZE);
-        String FILE3 =  "http://androhub.com/demo/demo.mp3"; //model.getUrl();
+        String FILE3 =  model.getUrl();
         Uri downloadUri = Uri.parse(FILE3);
-//        Uri destinationUri = Uri.parse(filesDir+"/test_song.mp3");
         String fileName = String.valueOf(model.getFileId());
-        Uri destinationUri = Uri.parse(filesDir+"/"+fileName +".rs");
+        Uri destinationUri = Uri.parse(filesDir+"/"+fileName +".pdf");
         downloadRequest3 = new DownloadRequest(downloadUri)
                 .setDestinationURI(destinationUri).setPriority(DownloadRequest.Priority.HIGH)
                 .setDownloadContext("Download3")

@@ -16,7 +16,7 @@ import com.shockwave.pdfium.PdfDocument;
 
 public class PdfViewer extends AppCompatActivity implements OnPageChangeListener, OnLoadCompleteListener {
     PDFView pdfView;
-    String s1,s2,s3,s4;
+    String filepath,s1,s2,s3,s4;
 
     Integer pageNumber = 0;
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -29,6 +29,10 @@ public class PdfViewer extends AppCompatActivity implements OnPageChangeListener
         pdfView=(PDFView)findViewById(R.id.pdfView);
 
         Bundle extras = getIntent().getExtras();
+        filepath = extras.getString("filepath");
+        viewPdf(filepath);
+
+
         s1 = extras.getString("class6");
         s2 = extras.getString("class7");
         s3 = extras.getString("class8");
@@ -97,9 +101,26 @@ public class PdfViewer extends AppCompatActivity implements OnPageChangeListener
 
 
     public void viewPdf(String urlString) {
+        Uri file= Uri.parse(urlString);
 
 
-
+        pdfView.fromUri(file)
+                .enableSwipe(true) // allows to block changing pages using swipe
+                .swipeHorizontal(true)
+                .enableDoubletap(true)
+                .defaultPage(0)
+                .onPageChange(this)
+                .onLoad(this)
+                .scrollHandle(new DefaultScrollHandle(this))
+                .pageFitPolicy(FitPolicy.BOTH)
+                .enableAntialiasing(true) // improve rendering a little bit on low-res screens
+                // spacing between pages in dp. To define spacing color, set view background
+                .spacing(10)
+                .autoSpacing(true) // add dynamic spacing to fit each page on its own on the screen
+                .pageSnap(true) // snap pages to screen boundaries
+                .pageFling(true) // make a fling change only a single page like ViewPager
+                .nightMode(false) // toggle night mode
+                .load();
     }
 
     @Override
